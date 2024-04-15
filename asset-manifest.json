@@ -1,0 +1,18 @@
+{
+  "files": {
+    "main.css": "/un-sweet/vtuber-analysis.git/static/css/main.e6c13ad2.css",
+    "main.js": "/un-sweet/vtuber-analysis.git/static/js/main.14a682e7.js",
+    "static/js/787.b18a08af.chunk.js": "/un-sweet/vtuber-analysis.git/static/js/787.b18a08af.chunk.js",
+    "static/media/Hololive_worldcloud.png": "/un-sweet/vtuber-analysis.git/static/media/Hololive_worldcloud.f459133155de47182cf6.png",
+    "static/media/x_worldcloud.png": "/un-sweet/vtuber-analysis.git/static/media/x_worldcloud.681cd487d7b3d268e694.png",
+    "static/media/nijisanji_worldcloud.png": "/un-sweet/vtuber-analysis.git/static/media/nijisanji_worldcloud.f15c3391892c68c5527d.png",
+    "index.html": "/un-sweet/vtuber-analysis.git/index.html",
+    "main.e6c13ad2.css.map": "/un-sweet/vtuber-analysis.git/static/css/main.e6c13ad2.css.map",
+    "main.14a682e7.js.map": "/un-sweet/vtuber-analysis.git/static/js/main.14a682e7.js.map",
+    "787.b18a08af.chunk.js.map": "/un-sweet/vtuber-analysis.git/static/js/787.b18a08af.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.e6c13ad2.css",
+    "static/js/main.14a682e7.js"
+  ]
+}
