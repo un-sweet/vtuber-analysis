@@ -5,10 +5,10 @@ from datetime import datetime
 import re
 
 
-# 函數用來取得每一頁的資料
+#function for getting data
 def get_page_data(url):
     response = requests.get(url, headers={'cookie': 'over18=1;'})
-    response.encoding = 'utf-8'  # 指定正確的編碼
+    response.encoding = 'utf-8'  
     soup = BeautifulSoup(response.text, 'html.parser')
     results = soup.select("div.title")
     page_data = []
@@ -17,12 +17,12 @@ def get_page_data(url):
         title = item.text.strip()
 
         # classification
-        # 判斷是否包含 hololive 關鍵字
+        # Check hololive keywords
         is_hololive_related = any(keyword in title for keyword in hololive_keywords)
-        # 判斷是否包含 にじさんじ 或 彩虹社 關鍵字
+        # Check にじさんじ keywords
         is_nijisanji_related = any(keyword in title for keyword in nijisanji_keywords)
 
-        # 根據判斷結果進行分類並存入列表
+        # saving variables
         if is_hololive_related:
             classification = "H"
         elif is_nijisanji_related:
@@ -42,9 +42,8 @@ def get_page_data(url):
             articles = soup.find_all('div', 'push')
             each_comment = []
             for article in articles:
-                #messages = article.find('span', 'f3 push-content').getText()
                 push_content_span = article.find('span', 'f3 push-content')
-                # 如果找不到 'span' 標籤和 'f3 push-content' class，將 messages 設為空字符串
+                # if no 'span' and 'f3 push-content' class, messages =""
                 messages = push_content_span.getText() if push_content_span else ""
                 #print(messages)
                 each_comment.append(messages)
@@ -63,7 +62,7 @@ def get_page_data(url):
                 print(time_elements[2].text)
                 post_time = time_elements[2].text
             else:
-                # 如果找不到時間元素，為 post_datetime 賦一個預設值（當前的系統時間）
+                # if no time element，post_datetime = ""
                 post_datetime = ""
 
 
@@ -89,7 +88,7 @@ def get_page_data(url):
     return page_data
 
 
-# 關鍵字列表
+# keywords
 hololive_keywords = ["hololive", "ホロライブ", "スバル","holo","時乃空",
     "ときのそら",
     "蘿蔔子",
@@ -287,23 +286,22 @@ nijisanji_keywords = ["にじさんじ", "彩虹社","葛葉", "笹木咲", "kuz
     "壱百満天原サロメ"
 ]
 
-# 設定起始頁面和總頁數
+# setting start page
 start_url = "https://www.ptt.cc/bbs/Vtuber/index.html"
 total_pages = 732
-#total_pages = 3
 prev_post_datetime = 0
 
-# 爬取多頁面的資料
+# scrap multiple page
 all_data = []
 for page in range(total_pages):
     page_data = get_page_data(start_url)
     all_data.extend(page_data)
-   # 找到上一頁的 a 標籤
+   # find "a" tag in last page
     prev_page_link = BeautifulSoup(requests.get(start_url).text, 'html.parser').find('a', class_='btn wide', string='‹ 上頁')
 
     
     if prev_page_link:
-        # 使用正規表達式找到 href 中的數字部分，並將其減一
+        # find number in "href" tag and minus one to fit previous page
         page_number = re.search(r'\d+', prev_page_link['href']).group()
         start_url = f"https://www.ptt.cc/bbs/Vtuber/index{int(page_number)}.html"
         print(start_url)
@@ -311,8 +309,8 @@ for page in range(total_pages):
         print("Its the first one cannot get another one")
         break
 
-# 將資料存入 DataFrame
+# saving data to DataFrame
 df = pd.DataFrame(all_data)
 
-# 將 DataFrame 寫入 Excel 文件
+# write DataFrame to Excel 
 df.to_excel('data.xlsx', index=False)
