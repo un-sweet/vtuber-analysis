@@ -58,41 +58,43 @@ segment_result <- segment_result[!segment_result %in% stopwords_TW]
 head(segment_result, 50)
 
 
+#############################
+#    COUNT NUM OF ARTICLE   #
+#############################
 
-#######################
-# count num of article
-#######################
 article_counts <- data %>%
   group_by(Type) %>%
   summarise(total_articles = n())
  
 article_counts 
 
-#######################
-# count average like
-#######################
+#############################
+#     COUNT AVERAGE LIKE    #
+#############################
+
 average_likes <- data %>%
   group_by(Type) %>%
   summarise(average_likes = mean(Like))
 
 average_likes
 
-#######################
-# count average comment num
-#######################
+#############################
+# COUNT AVERAGE COMMENT NUM #
+#############################
+
 average_comment <- data %>%
   group_by(Type) %>%
   summarise(total_comment_num = mean(CommentNum))
 
 average_comment
 
-################################
-##comment
-#################################
+#############################
+#      WORDS FREQUENCY      #
+#############################
 
 data$Time <- as.POSIXct(data$Time)
 
-# 依序撈出三種 Type 的 Comment
+# get all Type Comments
 Holo_comments <- data %>%
   filter(Type == "H") %>%
   select(Comment)
@@ -105,30 +107,30 @@ X_comments <- data %>%
   filter(Type == "X") %>%
   select(Comment)
 
-# remove URLs
+# Remove URLs
 Holo_comments$Comment <- str_replace_all(Holo_comments$Comment, "https?://\\S+", "")
 Niji_comments$Comment <- str_replace_all(Niji_comments$Comment, "https?://\\S+", "")
 X_comments$Comment <- str_replace_all(X_comments$Comment, "https?://\\S+", "")
 
 
-# 斷詞
+# Segment
 
 Holo_words <- segment(Holo_comments$Comment, seg)
 Niji_words <- segment(Niji_comments$Comment, seg)
 X_words <- segment(X_comments$Comment, seg)
 
-# 加入停用詞
+# Add stopwords
 Holo_words <- Holo_words[!Holo_words %in% stopwords_TW]
 Niji_words <- Niji_words[!Niji_words %in% stopwords_TW]
 X_words <- X_words[!X_words %in% stopwords_TW]
 
 
-# 計算詞頻
+# Calculate frequency
 Holo_word_freq <- freq(Holo_words)
 Niji_word_freq <- freq(Niji_words)
 X_word_freq <- freq(X_words)
 
-# 取得 Top 20 詞
+# Get Top 20 words
 top20_Holo <- head(Holo_word_freq[order(Holo_word_freq$freq, decreasing = TRUE), ], 20)
 top20_Niji <- head(Niji_word_freq[order(Niji_word_freq$freq, decreasing = TRUE), ], 20)
 top20_X <- head(X_word_freq[order(X_word_freq$freq, decreasing = TRUE), ], 20)
@@ -136,7 +138,7 @@ top20_X <- head(X_word_freq[order(X_word_freq$freq, decreasing = TRUE), ], 20)
 top20_Holo
 
 
-# 繪製詞頻長條圖
+# Draw Wprds Frequemcy Chart
 
 barplot(top20_Holo$freq, main = "Top 20 Words in Hololive", col = "lightblue", las = 2, names.arg = top20_Holo$char)
 
@@ -147,42 +149,32 @@ barplot(top20_Niji$freq, main = "Top 20 Words in Nijisanji", col = "lightgreen",
 barplot(top20_X$freq, main = "Top 20 Words in Other Type", col = "lightcoral", las = 2, names.arg = top20_X$char)
 
 
+#############################
+#        WORLDCLOUD         #
+#############################
 
-#################################
-# wordcloud
-################
 
-
-# 調整顏色方案
+# Set color
 library(RColorBrewer)
 colors <- brewer.pal(8, "Dark2")
 any(Holo_word_freq$freq == 0)
-# 繪製 Hololive 文字雲
+
+# Plot Hololive worldcloud
 par(family=("Microsoft YaHei"))
 set.seed(1234)
 wordcloud(Holo_word_freq$char, Holo_word_freq$freq, min.freq = 20, random.order = F, ordered.colors = F, colors = rainbow(nrow(Holo_word_freq)))
 
-
-
-
-#############
- # for reproducibility 
-
 wordcloud2(filter(Holo_freq, freq > 10), 
            minSize = 2, fontFamily = "Microsoft YaHei", size = 0.75, color='random-light', backgroundColor="black")
-
-
-
 
 wordcloud2(filter(Niji_freq, freq > 500), 
            minSize = 2, fontFamily = "Microsoft YaHei", size = 0.73, color='random-light', backgroundColor="black")
 
-#X_freq <- freq(X_words)
 wordcloud2(filter(X_freq, freq > 250), 
            minSize = 2, fontFamily = "Microsoft YaHei", size = 0.55, color='random-light', backgroundColor="black")
 
-########################################
-# Time
+#############################
+#     ARTICLE FREQUENCY     #
 #############################
 
 Holo_articles <- data %>%
@@ -194,15 +186,12 @@ Niji_articles <- data %>%
 X_articles <- data %>%
   filter(Type == "X")
 
-# 計算每日文章數量
+# Count Frequency
 Holo_daily_counts <- table(format(Holo_articles$Time, "%Y-%m-%d"))
 Niji_daily_counts <- table(format(Niji_articles$Time, "%Y-%m-%d"))
 X_daily_counts <- table(format(X_articles$Time, "%Y-%m-%d"))
 
-# each graph
-
-
-# 合併三個 Type 的文章數據
+# Combine all Type data
 combined_counts <- rbind(
   data.frame(Time = as.Date(names(Holo_daily_counts)), Count = as.numeric(Holo_daily_counts), Type = "Hololive"),
   data.frame(Time = as.Date(names(Niji_daily_counts)), Count = as.numeric(Niji_daily_counts), Type = "Nijisanji"),
@@ -213,9 +202,6 @@ holo_article_freq <- data.frame(Time = as.Date(names(Holo_daily_counts)), Count 
 niji_article_freq <- data.frame(Time = as.Date(names(Niji_daily_counts)), Count = as.numeric(Niji_daily_counts), Type = "N")
 x_article_freq <- data.frame(Time = as.Date(names(X_daily_counts)), Count = as.numeric(X_daily_counts), Type = "X")
 
-
-
-# 假設你有三個 data.frame: holo_article_freq, niji_article_freq, x_article_freq
 
 ggplot(holo_article_freq, aes(x = Time, y = Count)) +
   geom_line(color = "lightblue") +
@@ -245,16 +231,15 @@ ggplot(x_article_freq, aes(x = Time, y = Count)) +
   scale_color_manual(values = "lightgreen")
 
 
-# 轉換 Time 到日期格式
+
 combined_counts$Time <- as.Date(combined_counts$Time)
 
-# 繪製摺線圖
+# Drawing line chart
 ggplot(combined_counts, aes(x = Time, y = Count, color = Type)) +
   geom_line() +
   labs(title = "Daily Article Counts by Type", x = "Time", y = "Article Counts") +
   theme_minimal()+
   facet_grid(Type ~ ., scales = "free_y")
-
 
 
 X_counts <- data.frame(Time = as.Date(names(X_daily_counts)), Count = as.numeric(X_daily_counts), Type = "X")
@@ -265,16 +250,18 @@ ggplot(X_counts, aes(x = Time, y = Count, color = Type)) +
   theme_minimal()
 
 ###############################################
-# 合併 Hololive 和 Nijisanji 的文章數據
+# Hololive Nijisanji Aricle Number Comparison #
+###############################################
+
 holo_niji_counts <- rbind(
   data.frame(Time = as.Date(names(Holo_daily_counts)), Count = as.numeric(Holo_daily_counts), Type = "Hololive"),
   data.frame(Time = as.Date(names(Niji_daily_counts)), Count = as.numeric(Niji_daily_counts), Type = "Nijisanji")
 )
 
-# 轉換 Time 到日期格式
+# Convert Time to Date
 holo_niji_counts$Time <- as.Date(holo_niji_counts$Time)
 
-# 繪製彩色長條圖
+# Drawing bar chart
 ggplot(holo_niji_counts, aes(x = Time, y = Count, fill = Type)) +
   geom_col(position = "stack") +
   labs(title = "Daily Article Counts by Type", x = "Time", y = "Article Counts") +
